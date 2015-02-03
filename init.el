@@ -44,6 +44,12 @@
 (setq locale-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
 
+(require 'typopunct)
+(typopunct-change-language 'english t)
+
+; Fix "<dead-tilde> is undefined" on Ubuntu 14.04
+(require 'iso-transl)
+
 ;; Create a variable to store the path to this dotfile directory
 ;; (Usually ~/.emacs.d)
 (setq dotfiles-dir (file-name-directory
@@ -360,6 +366,13 @@
 (require 'markdown-mode)
 (setq auto-mode-alist
    (cons '("\\.md" . markdown-mode) auto-mode-alist))
+
+;; enable typopunct for markdown-mode
+(add-hook 'markdown-mode-hook 'my-markdown-init)
+(defun my-markdown-init ()
+  (require 'typopunct)
+  (typopunct-change-language 'english)
+  (typopunct-mode 1))
 
 (load-file (concat dotfiles-lib-dir "blackbored.el"))
 (color-theme-blackbored)
