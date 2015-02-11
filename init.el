@@ -44,9 +44,6 @@
 (setq locale-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
 
-(require 'typopunct)
-(typopunct-change-language 'english t)
-
 ; Fix "<dead-tilde> is undefined" on Ubuntu 14.04
 (require 'iso-transl)
 
@@ -72,6 +69,9 @@
 
 ;; Ensure the lib directory is on the load path
 (add-dotfile-path "lib")
+
+(require 'typopunct)
+(typopunct-change-language 'english t)
 
 ; Git
 ;(require 'git)
