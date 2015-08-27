@@ -1,74 +1,33 @@
 ;; jarno.seppanen@iki.fi
 
-(setq inhibit-splash-screen t
-      inhibit-startup-message t)
-(global-font-lock-mode t)
-(setq font-lock-maximum-decoration t)
-(column-number-mode t)
-(transient-mark-mode t)
-
-(setq display-time-24hr-format t)
-(display-time-mode t)
-
-(set-default-font "Consolas-10") ; 96 DPI
-
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-
-(defun toggle-fullscreen ()
-  (interactive)
-  (if (frame-parameter nil 'fullscreen)
-      (progn (set-frame-parameter nil 'fullscreen nil))
-      (progn (set-frame-parameter nil 'fullscreen 'fullboth))))
-(global-set-key [f11] 'toggle-fullscreen)
-
-; line wrapping
-(setq default-truncate-lines t)
-(setq truncate-partial-width-windows 80)
-(global-set-key [f12] 'toggle-truncate-lines)
-
-; highlight overlong lines
-;(require 'whitespace)
-;(global-whitespace-mode t)
-;(setq whitespace-line-column 79)
-; (setq whitespace-style
-;       '(face lines-tail))
-
-; Unicode?
-(set-language-environment 'utf-8)
-(prefer-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-;(set-keyboard-coding-system 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(setq locale-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-
-; Fix "<dead-tilde> is undefined" on Ubuntu 14.04
-(require 'iso-transl)
-
-;; Create a variable to store the path to this dotfile directory
-;; (Usually ~/.emacs.d)
-(setq dotfiles-dir (file-name-directory
-                    (or (buffer-file-name) load-file-name)))
-
-;; Create variables to store the path to this dotfile dir's lib etc and tmp directories
-(setq dotfiles-lib-dir (concat dotfiles-dir "lib/"))
-(setq dotfiles-tmp-dir (concat dotfiles-dir "tmp/"))
-(setq dotfiles-etc-dir (concat dotfiles-dir "etc/"))
-
 ;; Create helper fns for loading dotfile paths and files
-(defun add-dotfile-path (p)
-  (add-to-list 'load-path (concat dotfiles-dir p)))
+
+;; Added by Package.el.  This must come before configurations of
+;; installed packages.  Don't delete this line.  If you don't want it,
+;; just comment it out by adding a semicolon to the start of the line.
+;; You may delete these explanatory comments.
+(package-initialize)
 
 (defun add-lib-path (p)
-  (add-to-list 'load-path (concat dotfiles-lib-dir p)))
-
-(defun load-dotfile (f)
-  (load-file (concat dotfiles-dir f)))
+  (add-to-list 'load-path (concat user-emacs-directory "lib/" p)))
 
 ;; Ensure the lib directory is on the load path
-(add-dotfile-path "lib")
+(add-to-list 'load-path (concat user-emacs-directory "lib"))
+
+;; install packages
+(load (concat user-emacs-directory "init-packages.el"))
+
+;; configure editing
+(load (concat user-emacs-directory "init-editing.el"))
+
+;; configure navigation
+(load (concat user-emacs-directory "init-navigation.el"))
+
+;; configure UI
+(load (concat user-emacs-directory "init-ui.el"))
+
+;; configure clojure mode
+(load (concat user-emacs-directory "init-clojure.el"))
 
 (require 'typopunct)
 (typopunct-change-language 'english t)
@@ -80,75 +39,88 @@
 
 ; Matlab-mode
 
-(autoload 'matlab-mode "matlab" "Enter Matlab mode." t)
-(setq auto-mode-alist (cons '("\\.m\\'" . matlab-mode) auto-mode-alist))
-(autoload 'matlab-shell "matlab" "Interactive Matlab mode." t)
+;; (autoload 'matlab-mode "matlab" "Enter Matlab mode." t)
+;; (setq auto-mode-alist (cons '("\\.m\\'" . matlab-mode) auto-mode-alist))
+;; (autoload 'matlab-shell "matlab" "Interactive Matlab mode." t)
 
-(setq matlab-mode-install-path (list "~/matlab"))
-(setq matlab-mode-install-path (append matlab-mode-install-path (list "c:/APPS/MATLAB6p5/toolbox")))
+;; (setq matlab-mode-install-path (list "~/matlab"))
+;; (setq matlab-mode-install-path (append matlab-mode-install-path (list "c:/APPS/MATLAB6p5/toolbox")))
 
 ; Python stuff
 
-;(autoload 'python-mode "python-mode" "Python editing mode." t)
-;(setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
-;(setq auto-mode-alist (cons '("\\.pyw$" . python-mode) auto-mode-alist))
-;(setq interpreter-mode-alist (cons '("python" . python-mode) interpreter-mode-alist))
+;; (setq py-install-directory (concat user-emacs-directory "lib/python-mode.el-6.1.3"))
+;; (add-to-list 'load-path py-install-directory)
+;; (require 'python-mode)
+;; (when (featurep 'python) (unload-feature 'python t))
 
 (defun js-python-mode-hook ()
   (setq indent-tabs-mode nil)
   )
 (add-hook 'python-mode-hook 'js-python-mode-hook)
 
-(require 'pymacs)
-(pymacs-load "ropemacs" "rope-")
+; ipython
+;; (setq
+;;  python-shell-interpreter "ipython"
+;;  python-shell-interpreter-args ""
+;;  python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+;;  python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+;;  python-shell-completion-setup-code
+;;    "from IPython.core.completerlib import module_completion"
+;;  python-shell-completion-module-string-code
+;;    "';'.join(module_completion('''%s'''))\n"
+;;  python-shell-completion-string-code
+;;    "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
 
-;; disable flymake popups
-(defadvice flymake-display-warning (before minibuf-warning (warning) activate compile)
-  "Display a warning to the user, in the mini-buffer"
-  (message warning))
+;; (require 'pymacs)
+;; (pymacs-load "ropemacs" "rope-")
 
-;; flymake-pyflakes integration
-;; http://www.yilmazhuseyin.com/blog/dev/emacs-setup-python-development/
-;; http://www.plope.com/Members/chrism/flymake-mode
-(when (load "flymake" t)
-  (defun flymake-pyflakes-init ()
-    (let* ((temp-file (flymake-init-create-temp-buffer-copy
-                       'flymake-create-temp-inplace))
-           (local-file (file-relative-name
-                        temp-file
-                        (file-name-directory buffer-file-name))))
-      (list "pyflakes" (list local-file))))
+;; ;; disable flymake popups
+;; (defadvice flymake-display-warning (before minibuf-warning (warning) activate compile)
+;;   "Display a warning to the user, in the mini-buffer"
+;;   (message warning))
 
-  (add-to-list 'flymake-allowed-file-name-masks
-               '("\\.py\\'" flymake-pyflakes-init)))
+;; ;; flymake-pyflakes integration
+;; ;; http://www.yilmazhuseyin.com/blog/dev/emacs-setup-python-development/
+;; ;; http://www.plope.com/Members/chrism/flymake-mode
+;; (when (load "flymake" t)
+;;   (defun flymake-pyflakes-init ()
+;;     (let* ((temp-file (flymake-init-create-temp-buffer-copy
+;;                        'flymake-create-temp-inplace))
+;;            (local-file (file-relative-name
+;;                         temp-file
+;;                         (file-name-directory buffer-file-name))))
+;;       (list "pyflakes" (list local-file))))
 
-(add-hook 'find-file-hook 'flymake-find-file-hook)
+;;   (add-to-list 'flymake-allowed-file-name-masks
+;;                '("\\.py\\'" flymake-pyflakes-init)))
 
-(defun my-flymake-show-help ()
-  (when (get-char-property (point) 'flymake-overlay)
-   (let ((help (get-char-property (point) 'help-echo)))
-    (if help (message "%s" help)))))
+;; (add-hook 'find-file-hook 'flymake-find-file-hook)
 
-(add-hook 'post-command-hook 'my-flymake-show-help)
+;; (defun my-flymake-show-help ()
+;;   (when (get-char-property (point) 'flymake-overlay)
+;;    (let ((help (get-char-property (point) 'help-echo)))
+;;     (if help (message "%s" help)))))
+
+;; (add-hook 'post-command-hook 'my-flymake-show-help)
 
 ; emacs-ipython-notebook
 ;(require 'ein)
 
 ; Haskell-mode
 
-(load-dotfile "lib/haskell-mode-2.8.0/haskell-site-file.el")
-(add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+;; (load-dotfile "lib/haskell-mode-2.8.0/haskell-site-file.el")
+;; (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
+;; (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+;; (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
 
 ;;
 ;; User Level customizations (You need not use them all):
-(defun my-matlab-mode-hook ()
-  (setq fill-column 75)		; where auto-fill should wrap
-  (setq matlab-verify-on-save-flag nil) ; turn off auto-verify on save
-;;   (setq matlab-indent-function t)	; if you want function bodies indented
-  )
-(add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
+;; (defun my-matlab-mode-hook ()
+;;   (setq fill-column 75)		; where auto-fill should wrap
+;;   (setq matlab-verify-on-save-flag nil) ; turn off auto-verify on save
+;; ;;   (setq matlab-indent-function t)	; if you want function bodies indented
+;;   )
+;; (add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
 ;;   (defun my-matlab-shell-mode-hook ()
 ;;	'())
 ;;   (add-hook 'matlab-shell-mode-hook 'my-matlab-shell-mode-hook)
@@ -196,244 +168,167 @@
 
 ;(add-hook 'c-mode-common-hook 'oma-c-mode-hook)
 
-(setq fill-column 80)
-(setq current-fill-column 80)
-
 ; for Herbie/Symbian work
-(defun my-c-mode-hook ()
-  ; indentation 4
-  (setq-default c-basic-offset 4)
-  ; indent with spaces, no tabs
-  (setq indent-tabs-mode nil)
-  ; backspace will untabify
-  (setq backward-delete-char-untabify-method (quote hungry))
-  ; braces {} at indentation 4 together with the block of code
-  (c-set-offset 'substatement-open 4)
-  (c-set-offset 'statement-block-intro 4)
-  ; case indentation 4 within a switch
-  (c-set-offset 'case-label 0)
-  ; maximize speed
-  (setq c-recognize-knr-p nil)
-  ; coloured text
-  (setq font-lock-maximum-decoration t)
-  (turn-on-font-lock)
-  ; YksiSanaEteenpäinPitkässäKetjussa
-  (define-key c-mode-map [(control right)] 'c-forward-into-nomenclature)
-  ; YksiSanaTaaksepäinPitkässäKetjussa
-  (define-key c-mode-map [(control left)] 'c-backward-into-nomenclature)
-  ; wrap lines
-  (auto-fill-mode t)
-  ; wrap after 80 characters
-  (setq fill-column 80)
-  (setq current-fill-column 80)
-  )
-(add-hook 'c-mode-common-hook 'my-c-mode-hook)
-; recognize .inl files as C/C++
-(setq auto-mode-alist (cons '("\\.inl$" . c-mode) auto-mode-alist))
+;; (defun my-c-mode-hook ()
+;;   ; indentation 4
+;;   (setq-default c-basic-offset 4)
+;;   ; indent with spaces, no tabs
+;;   (setq indent-tabs-mode nil)
+;;   ; backspace will untabify
+;;   (setq backward-delete-char-untabify-method (quote hungry))
+;;   ; braces {} at indentation 4 together with the block of code
+;;   (c-set-offset 'substatement-open 4)
+;;   (c-set-offset 'statement-block-intro 4)
+;;   ; case indentation 4 within a switch
+;;   (c-set-offset 'case-label 0)
+;;   ; maximize speed
+;;   (setq c-recognize-knr-p nil)
+;;   ; coloured text
+;;   (setq font-lock-maximum-decoration t)
+;;   (turn-on-font-lock)
+;;   ; YksiSanaEteenpäinPitkässäKetjussa
+;;   (define-key c-mode-map [(control right)] 'c-forward-into-nomenclature)
+;;   ; YksiSanaTaaksepäinPitkässäKetjussa
+;;   (define-key c-mode-map [(control left)] 'c-backward-into-nomenclature)
+;;   ; wrap lines
+;;   (auto-fill-mode t)
+;;   ; wrap after 80 characters
+;;   (setq fill-column 80)
+;;   (setq current-fill-column 80)
+;;   )
+;; (add-hook 'c-mode-common-hook 'my-c-mode-hook)
+;; ; recognize .inl files as C/C++
+;; (setq auto-mode-alist (cons '("\\.inl$" . c-mode) auto-mode-alist))
 
-; count-words-region function
+;; ; count-words-region function
 
-(defun count-words-region (beginning end)
-  "Print number of words in the region."
-  (interactive "r")
-  (message "Counting words in region ... ")
+;; (defun count-words-region (beginning end)
+;;   "Print number of words in the region."
+;;   (interactive "r")
+;;   (message "Counting words in region ... ")
 
-;;; 1. Set up appropriate conditions.
-  (save-excursion
-    (let ((count 0))
-      (goto-char beginning)
+;; ;;; 1. Set up appropriate conditions.
+;;   (save-excursion
+;;     (let ((count 0))
+;;       (goto-char beginning)
 
-;;; 2. Run the while loop.
-      (while (and (< (point) end)
-                  (re-search-forward "\\w+\\W*" end t))
-        (setq count (1+ count)))
+;; ;;; 2. Run the while loop.
+;;       (while (and (< (point) end)
+;;                   (re-search-forward "\\w+\\W*" end t))
+;;         (setq count (1+ count)))
 
-;;; 3. Send a message to the user.
-      (cond ((zerop count)
-             (message
-              "The region does NOT have any words."))
-            ((= 1 count)
-             (message
-              "The region has 1 word."))
-            (t
-             (message
-              "The region has %d words." count))))))
-
-; FIXME mode: highlight all FIXME tags on screen
-(setq fixme-modes '(c-mode c++-mode java-mode python-mode matlab-mode emacs-lisp-mode scheme-mode ess-mode))
-(make-face 'font-lock-fixme-face)
-(mapc (lambda (mode)
-        (font-lock-add-keywords
-         mode
-         '(("\\<\\(FIXME\\)" 1 'font-lock-fixme-face t))))
-      fixme-modes)
-(modify-face 'font-lock-fixme-face "Red" "Yellow" nil t nil t nil nil)
+;; ;;; 3. Send a message to the user.
+;;       (cond ((zerop count)
+;;              (message
+;;               "The region does NOT have any words."))
+;;             ((= 1 count)
+;;              (message
+;;               "The region has 1 word."))
+;;             (t
+;;              (message
+;;               "The region has %d words." count))))))
 
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(case-fold-search t)
- '(current-language-environment "utf-8")
- '(default-input-method "rfc1345")
- '(emacsw32-style-frame-title t)
- '(global-font-lock-mode t nil (font-lock))
- '(transient-mark-mode t))
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (magit volatile-highlights tagedit smex scala-mode rainbow-delimiters projectile pig-mode paredit minimap magit-popup lua-mode ido-ubiquitous ess ein clojure-mode-extra-font-locking cider))))
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  )
 
 (put 'narrow-to-region 'disabled nil)
 
 (put 'upcase-region 'disabled nil)
 
-(defun my-c-mode-hook ()
-  ; indentation 4
-  (setq-default c-basic-offset 4)
-  ; indent with spaces, no tabs
-  (setq indent-tabs-mode nil)
-  ; backspace will untabify
-  (setq backward-delete-char-untabify-method (quote hungry))
-  ; maximize speed
-  (setq c-recognize-knr-p nil)
-  ; coloured text
-  (setq font-lock-maximum-decoration t)
-  (turn-on-font-lock)
-  ; wrap lines
-  (auto-fill-mode t)
-  ; wrap after 80 characters
-  (setq fill-column 80)
-  (setq current-fill-column 80)
-  )
-(add-hook 'c-mode-common-hook 'my-c-mode-hook)
-
-(require 'package)
-;(add-to-list 'package-archives
-;	     '("marmalade" . "http://marmalade-repo.org/packages/"))
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/"))
-(package-initialize)
+;; (defun my-c-mode-hook ()
+;;   ; indentation 4
+;;   (setq-default c-basic-offset 4)
+;;   ; indent with spaces, no tabs
+;;   (setq indent-tabs-mode nil)
+;;   ; backspace will untabify
+;;   (setq backward-delete-char-untabify-method (quote hungry))
+;;   ; maximize speed
+;;   (setq c-recognize-knr-p nil)
+;;   ; coloured text
+;;   (setq font-lock-maximum-decoration t)
+;;   (turn-on-font-lock)
+;;   ; wrap lines
+;;   (auto-fill-mode t)
+;;   ; wrap after 80 characters
+;;   (setq fill-column 80)
+;;   (setq current-fill-column 80)
+;;   )
+;; (add-hook 'c-mode-common-hook 'my-c-mode-hook)
 
 ;; clojure/cascalog
 
-(unless (package-installed-p 'clojure-mode)
-  (package-refresh-contents)
-  (package-install 'clojure-mode))
+;; (unless (package-installed-p 'clojure-mode)
+;;   (package-refresh-contents)
+;;   (package-install 'clojure-mode))
 
-(autoload 'paredit-mode "paredit"
-"Minor mode for pseudo-structurally editing Lisp code." t)
-(add-hook 'clojure-mode-hook          (lambda () (paredit-mode +1)))
-(add-hook 'slime-mode-hook            (lambda () (paredit-mode +1)))
-(add-hook 'emacs-lisp-mode-hook       (lambda () (paredit-mode +1)))
-(add-hook 'lisp-mode-hook             (lambda () (paredit-mode +1)))
-(add-hook 'lisp-interaction-mode-hook (lambda () (paredit-mode +1)))
-(add-hook 'slime-mode-hook            (lambda () (rainbow-delimiters-mode +1)))
-(add-hook 'clojure-mode-hook          (lambda () (rainbow-delimiters-mode +1)))
-(require 'clojure-mode)
+;; (autoload 'paredit-mode "paredit"
+;; "Minor mode for pseudo-structurally editing Lisp code." t)
+;; (add-hook 'clojure-mode-hook          (lambda () (paredit-mode +1)))
+;; (add-hook 'slime-mode-hook            (lambda () (paredit-mode +1)))
+;; (add-hook 'emacs-lisp-mode-hook       (lambda () (paredit-mode +1)))
+;; (add-hook 'lisp-mode-hook             (lambda () (paredit-mode +1)))
+;; (add-hook 'lisp-interaction-mode-hook (lambda () (paredit-mode +1)))
+;; (add-hook 'slime-mode-hook            (lambda () (rainbow-delimiters-mode +1)))
+;; (add-hook 'clojure-mode-hook          (lambda () (rainbow-delimiters-mode +1)))
+;; (require 'clojure-mode)
 
-(setq auto-mode-alist (cons '("\\.cljs$" . clojure-mode) auto-mode-alist))
+;; (setq auto-mode-alist (cons '("\\.cljs$" . clojure-mode) auto-mode-alist))
 
-(add-to-list 'kill-emacs-query-functions '(lambda () (yes-or-no-p "Exit for sure? ")))
+;; (require 'dircolors)
+;; (require 'rainbow-delimiters)
+;; (require 'mwe-log-commands)
+;; (require 'ace-jump-mode)
+;; (require 'key-chord)
+;; (key-chord-mode 1)
 
-(require 'dircolors)
-(require 'rainbow-delimiters)
-(require 'mwe-log-commands)
-(require 'ace-jump-mode)
-(require 'key-chord)
-(key-chord-mode 1)
+;; JSON
+(setq auto-mode-alist (cons '("\\.json$" . javascript-mode) auto-mode-alist))
+(defun beautify-json ()
+  (interactive)
+  (let ((b (if mark-active (min (point) (mark)) (point-min)))
+        (e (if mark-active (max (point) (mark)) (point-max))))
+    (shell-command-on-region b e
+     "python -mjson.tool" (current-buffer) t)))
 
-;;Color-theme
-(add-lib-path "color-theme")
-(require 'color-theme)
+;(define-key js-mode-map (kbd "C-c C-f") 'beautify-json)
 
-;;CoffeeScript
-(add-lib-path "coffee-mode")
-(require 'coffee-mode)
+;; ;;CoffeeScript
+;; (add-lib-path "coffee-mode")
+;; (require 'coffee-mode)
 
-;;Mustache/Handlebars
-(require 'mustache-mode)
-(setq auto-mode-alist (cons '("\\.hbs$" . mustache-mode) auto-mode-alist))
+;; ;;Mustache/Handlebars
+;; (require 'mustache-mode)
+;; (setq auto-mode-alist (cons '("\\.hbs$" . mustache-mode) auto-mode-alist))
 
-;;React JSX
-(setq auto-mode-alist (cons '("\\.jsx$" . javascript-mode) auto-mode-alist))
+;; ;;React JSX
+;; (setq auto-mode-alist (cons '("\\.jsx$" . javascript-mode) auto-mode-alist))
 
-;;Markdown
-(add-lib-path "markdown-mode")
-(require 'markdown-mode)
-(setq auto-mode-alist
-   (cons '("\\.md" . markdown-mode) auto-mode-alist))
+;; ;;Markdown
+;; (add-lib-path "markdown-mode")
+;; (require 'markdown-mode)
+;; (setq auto-mode-alist
+;;    (cons '("\\.md" . markdown-mode) auto-mode-alist))
 
-;; enable typopunct for markdown-mode
-(add-hook 'markdown-mode-hook 'my-markdown-init)
-(defun my-markdown-init ()
-  (require 'typopunct)
-  (typopunct-change-language 'english)
-  (typopunct-mode 1))
+;; ;; enable typopunct for markdown-mode
+;; (add-hook 'markdown-mode-hook 'my-markdown-init)
+;; (defun my-markdown-init ()
+;;   (require 'typopunct)
+;;   (typopunct-change-language 'english)
+;;   (typopunct-mode 1))
 
-(load-file (concat dotfiles-lib-dir "blackbored.el"))
-(color-theme-blackbored)
-
-;;make sure ansi colour character escapes are honoured
-(ansi-color-for-comint-mode-on)
-
-(require 'uniquify)
-(require 'ansi-color)
-(require 'recentf)
-
-;; create autosaves and backups tmp dirs if necessary
-(make-directory (concat dotfiles-tmp-dir "autosaves") t)
-(make-directory (concat dotfiles-tmp-dir "backups") t)
-
-;; Put autosave files (ie #foo#) and backup files (ie foo~) in ~/.emacs.d/tmp/
-(setq auto-save-file-name-transforms `((".*" ,(concat dotfiles-tmp-dir "autosaves/\\1") t)))
-(setq backup-directory-alist `((".*" . ,(concat dotfiles-tmp-dir "backups"))))
-(setq auto-save-list-file-name (concat dotfiles-tmp-dir "autosaves/autosave-list"))
-
-;;When you visit a file, point goes to the last place where it was when you previously visited
-;;Save file is set to dotfiles-tmp-dir/places
-(require 'saveplace)
-(setq-default save-place t)
-
-;;enable winner mode for C-c-(<left>|<right>) to navigate the history
-;;of buffer changes i.e. undo a split screen
-(when (fboundp 'winner-mode)
-      (winner-mode 1))
-
-(setq redisplay-dont-pause t
-      echo-keystrokes 0.02
-      color-theme-is-global t
-      shift-select-mode nil
-      mouse-yank-at-point nil
-      delete-by-moving-to-trash nil
-      uniquify-buffer-name-style 'forward
-      ediff-window-setup-function 'ediff-setup-windows-plain
-      xterm-mouse-mode t
-      save-place-file (concat dotfiles-tmp-dir "places")
-      delete-active-region nil
-      )
-
-(set-default 'indent-tabs-mode nil)
-(auto-compression-mode t)
-(show-paren-mode 1)
-
-(setq confirm-nonexistent-file-or-buffer nil)
-
-;;remove all trailing whitespace and trailing blank lines before saving the file
-;;(add-hook 'before-save-hook 'whitespace-cleanup)
-
-;; The amazing undo tree
-;;(add-lib-path "undo-tree")
-;;(require 'undo-tree)
-;;(global-undo-tree-mode)
-
-;; momentarily highlight changes made by commands such as undo, yank-pop, etc.
-(add-lib-path "volatile-highlights")
-(require 'volatile-highlights)
-(volatile-highlights-mode t)
+;; (require 'ansi-color)
 
 ;; org-mode
 (require 'org-install)
@@ -444,43 +339,34 @@
 (setq org-agenda-files (list "~/Dropbox/org/testi.org"
                              "~/Dropbox/org/work.org"))
 
-;; highlight expression on eval
-(require 'highlight)
-(require 'eval-sexp-fu)
-(setq eval-sexp-fu-flash-duration 0.5)
-
-;; ido-mode
-;(require 'ido)
-;(ido-mode t)
-
-
-;; R
-;; sudo apt-get install ess
+;; ;; R
+;; ;; (package-install ess)
 (add-to-list 'load-path "/usr/share/emacs24/site-lisp/ess")
 (require 'ess-site)
 (define-key ess-mode-map "_" 'self-insert-command)
 (define-key inferior-ess-mode-map "_" 'self-insert-command)
-;; alternative to options(width=999)
-(defun my-ess-post-run-hook ()
-  (ess-execute-screen-options)
-  (local-set-key "\C-cw" 'ess-execute-screen-options))
-(add-hook 'ess-post-run-hook 'my-ess-post-run-hook)
 
-;; YAML
-(load-file (concat dotfiles-lib-dir "yaml-mode.el"))
-(require 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
+;; ;; alternative to options(width=999)
+;; (defun my-ess-post-run-hook ()
+;;   (ess-execute-screen-options)
+;;   (local-set-key "\C-cw" 'ess-execute-screen-options))
+;; (add-hook 'ess-post-run-hook 'my-ess-post-run-hook)
 
-;; Scala
-(require 'scala-mode)
-(add-to-list 'auto-mode-alist '("\\.scala$" . scala-mode))
+;; ;; YAML
+;; (load-file (concat user-emacs-directory "lib/yaml-mode.el"))
+;; (require 'yaml-mode)
+;; (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
 
-;; minimap
-(require 'minimap)
+;; ;; Scala
+;; (require 'scala-mode)
+;; (add-to-list 'auto-mode-alist '("\\.scala$" . scala-mode))
 
-;; Pig Latin
-(unless (package-installed-p 'pig-mode)
-  (package-refresh-contents)
-  (package-install 'pig-mode))
-(require 'pig-mode)
-(setq pig-indent-level 2)
+;; ;; minimap
+;; (require 'minimap)
+
+;; ;; Pig Latin
+;; (unless (package-installed-p 'pig-mode)
+;;   (package-refresh-contents)
+;;   (package-install 'pig-mode))
+;; (require 'pig-mode)
+;; (setq pig-indent-level 2)
