@@ -116,3 +116,6 @@
 (require 'highlight)
 (require 'eval-sexp-fu)
 (setq eval-sexp-fu-flash-duration 0.5)
+
+;; full path in title bar: useful for ulogme
+(setq-default frame-title-format "%b (%f) - Emacs")
